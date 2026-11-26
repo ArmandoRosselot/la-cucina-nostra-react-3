@@ -10,6 +10,7 @@ import Productos from './pages/Productos.jsx';
 import DetalleProducto from './pages/DetalleProducto.jsx';
 import Categorias from './pages/Categorias.jsx';
 import Ofertas from './pages/Ofertas.jsx';
+import ArmarPizza from './pages/ArmarPizza.jsx';
 import { Nosotros, Blog, BlogDetalle, Contacto } from './pages/Paginas.jsx';
 import Checkout from './pages/Checkout.jsx';
 import PagoResultado from './pages/PagoResultado.jsx';
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/categorias/:nombre" element={<Categorias />} />
             <Route path="/ofertas" element={<Ofertas />} />
+            <Route path="/armar-pizza" element={<ArmarPizza />} />
             <Route path="/nosotros" element={<Nosotros />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:id" element={<BlogDetalle />} />
