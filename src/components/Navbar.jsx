@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
-import { CATEGORIAS } from '../data/db.js';
+import { CATEGORIAS, obtenerProductos } from '../data/db.js';
 import { validarBusqueda, formatearPrecio } from '../utils/validaciones.js';
 
 /* Encabezado según el template (Figura 1):
@@ -17,6 +17,7 @@ export default function Navbar({ onAbrirCarrito }) {
   const { sesion, esAdmin, salir } = useAuth();
   const { unidades, total } = useCart();
   const navigate = useNavigate();
+  const [sugerencias] = useState(() => obtenerProductos().map((p) => p.nombre));
   const cerrar = () => { setAbierto(false); setDropdown(false); };
 
   const buscar = (e) => {
@@ -44,11 +45,16 @@ export default function Navbar({ onAbrirCarrito }) {
                 className={`form-control ${error ? 'is-invalid' : ''}`}
                 placeholder="Buscar"
                 aria-label="Buscar plato"
+                list="sugerencias-busqueda"
+                autoComplete="off"
                 value={texto}
                 onChange={(e) => setTexto(e.target.value)}
               />
               <button type="submit" className="btn btn-outline-success">Buscar</button>
             </div>
+            <datalist id="sugerencias-busqueda" data-testid="sugerencias-busqueda">
+              {sugerencias.map((n) => <option key={n} value={n} />)}
+            </datalist>
             {error && <div className="text-danger small" role="alert">{error}</div>}
           </form>
 

@@ -57,3 +57,14 @@ describe('<Navbar />', () => {
     expect(screen.getByRole('link', { name: 'Todas las categorías' })).toHaveAttribute('href', '/categorias');
   });
 });
+
+describe('Navbar · sugerencias del buscador (IE1.2)', () => {
+  it('asocia el buscador a un datalist con los nombres de los platos', () => {
+    renderConApp(<Navbar onAbrirCarrito={() => {}} />);
+    const buscador = screen.getByRole('combobox', { name: /buscar plato/i });
+    expect(buscador).toHaveAttribute('list', 'sugerencias-busqueda');
+    const opciones = screen.getByTestId('sugerencias-busqueda').querySelectorAll('option');
+    expect(opciones.length).toBeGreaterThan(0);
+    expect([...opciones].map((o) => o.value)).toContain('Bruschetta tradicional');
+  });
+});

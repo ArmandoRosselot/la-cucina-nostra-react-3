@@ -62,3 +62,16 @@ Instalar GSAP:
 ```bash
 npm install gsap
 ```
+
+## Flujo de trabajo colaborativo (Git / GitHub)
+- Rama estable: `main`. Cada cambio se hace en una rama propia: `feature/<tema>`, `fix/<tema>` o `test/<tema>`.
+- Commits pequeños con mensaje en imperativo, p. ej. `feat: agrega validación de teléfono` o `test: cubre módulo Usuarios del admin`.
+- Se integra a `main` mediante Pull Request revisado por otro integrante del equipo.
+- `node_modules/`, `coverage/`, `dist/` y `.env` están en `.gitignore` (no se suben al repositorio).
+
+```bash
+git checkout -b feature/mi-cambio
+git add . && git commit -m "feat: descripción del cambio"
+git push -u origin feature/mi-cambio   # luego abrir el Pull Request en GitHub
+git checkout main && git pull          # actualizar después del merge
+```

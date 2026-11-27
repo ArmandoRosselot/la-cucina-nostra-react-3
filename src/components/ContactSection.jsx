@@ -32,7 +32,7 @@ export default function ContactSection() {
         <textarea id={`contacto-${id}`} name={id} rows="4" className={`form-control ${errores[id] ? 'is-invalid' : ''}`}
           value={valores[id]} onChange={cambiar} aria-invalid={Boolean(errores[id])} />
       ) : (
-        <input id={`contacto-${id}`} name={id} type={props.type || 'text'} className={`form-control ${errores[id] ? 'is-invalid' : ''}`}
+        <input id={`contacto-${id}`} name={id} type={props.type || 'text'} autoComplete={props.autoComplete} className={`form-control ${errores[id] ? 'is-invalid' : ''}`}
           value={valores[id]} onChange={cambiar} aria-invalid={Boolean(errores[id])} />
       )}
       {errores[id] && <div className="invalid-feedback" role="alert">{errores[id]}</div>}
@@ -51,8 +51,8 @@ export default function ContactSection() {
             <div className="col-lg-7">
               {enviado && <div className="alert alert-success" role="status">¡Gracias! Recibimos tu mensaje y te responderemos pronto.</div>}
               <form onSubmit={enviar} noValidate>
-                {campo('nombre', 'Nombre y apellido')}
-                {campo('email', 'Correo electrónico', { type: 'email' })}
+                {campo('nombre', 'Nombre y apellido', { autoComplete: 'name' })}
+                {campo('email', 'Correo electrónico', { type: 'email', autoComplete: 'email' })}
                 {campo('mensaje', 'Mensaje', { as: 'textarea' })}
                 <button type="submit" className="btn lcn-btn-primary">Enviar mensaje</button>
               </form>

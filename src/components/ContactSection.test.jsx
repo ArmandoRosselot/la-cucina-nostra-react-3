@@ -37,3 +37,11 @@ describe('<ContactSection />', () => {
     expect(screen.getByLabelText('Nombre y apellido')).toHaveValue('');
   });
 });
+
+describe('ContactSection · autocompletado (IE1.2)', () => {
+  it('declara autocomplete en nombre y correo', () => {
+    render(<ContactSection />);
+    expect(screen.getByLabelText(/nombre y apellido/i)).toHaveAttribute('autocomplete', 'name');
+    expect(screen.getByLabelText(/correo electrónico/i)).toHaveAttribute('autocomplete', 'email');
+  });
+});

@@ -11,8 +11,8 @@ import { formatearPrecio } from '../utils/validaciones.js';
 
 const Lectura = ({ etiqueta, valor }) => (
   <div className="col-md-6 mb-2">
-    <label className="form-label small mb-1">{etiqueta}</label>
-    <input className="form-control form-control-sm" readOnly value={valor} aria-label={etiqueta} />
+    <label htmlFor={`lectura-${etiqueta}`} className="form-label small mb-1">{etiqueta}</label>
+    <input id={`lectura-${etiqueta}`} className="form-control form-control-sm" readOnly value={valor} />
   </div>
 );
 
