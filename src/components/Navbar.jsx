@@ -101,6 +101,7 @@ export default function Navbar({ onAbrirCarrito }) {
             </li>
 
             <li className="nav-item"><Link className="nav-link" to="/ofertas" onClick={cerrar}>Ofertas</Link></li>
+            <li className="nav-item"><Link className="nav-link" to="/recetas" onClick={cerrar}>Recetas</Link></li>
             <li className="nav-item"><Link className="nav-link" to="/nosotros" onClick={cerrar}>Nosotros</Link></li>
             <li className="nav-item"><Link className="nav-link" to="/blog" onClick={cerrar}>Blog</Link></li>
             <li className="nav-item"><Link className="nav-link" to="/contacto" onClick={cerrar}>Contacto</Link></li>

@@ -17,6 +17,7 @@ import Ofertas from './pages/Ofertas.jsx';
 import { Nosotros, Blog, BlogDetalle, Contacto } from './pages/Paginas.jsx';
 import Checkout from './pages/Checkout.jsx';
 import PagoResultado from './pages/PagoResultado.jsx';
+import RecetasAPI from './pages/RecetasAPI.jsx';
 // El panel admin se carga solo cuando se entra a él (code splitting).
 const LaCucinaNostraAdmin = lazy(() => import('./components/admin/LaCucinaNostraAdmin.jsx'));
 
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/ofertas" element={<Ofertas />} />
             <Route path="/nosotros" element={<Nosotros />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/recetas" element={<RecetasAPI />} />
             <Route path="/blog/:id" element={<BlogDetalle />} />
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/comprar" element={<Checkout />} />
