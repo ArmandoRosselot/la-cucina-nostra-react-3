@@ -1,6 +1,7 @@
 # La Cucina Nostra – Inicio (React + Bootstrap + Vitest)
 
 Parte "Inicio" de la tienda, migrada de HTML a React. Incluye Inicio de sesión y Registro.
+Remove-Item -Recurse -Force node_modules
 
 ## Ejecutar
 ```bash
