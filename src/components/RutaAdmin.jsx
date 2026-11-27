@@ -1,15 +1,6 @@
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
+import RutaProtegida from './RutaProtegida.jsx';
 
-/* Protege rutas exclusivas del administrador.
-   Si no hay sesión o el rol no es 'admin', redirige al inicio ('/').
-   Uso: <RutaAdmin><PanelAdmin /></RutaAdmin> */
+/* Atajo: ruta exclusiva del administrador. */
 export default function RutaAdmin({ children }) {
-  const { sesion } = useAuth();
-
-  if (sesion?.rol !== 'admin') {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
+  return <RutaProtegida roles={['admin']}>{children}</RutaProtegida>;
 }

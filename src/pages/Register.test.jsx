@@ -3,7 +3,10 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderConApp } from '../test/utils.jsx';
 import Register from './Register.jsx';
-import { obtenerUsuarios, registrarUsuario } from '../data/db.js';
+import { obtenerUsuarios as todosLosUsuarios, registrarUsuario } from '../data/db.js';
+
+// El administrador predefinido siempre existe: aquí solo interesan los clientes.
+const obtenerUsuarios = () => todosLosUsuarios().filter((u) => u.rol === 'cliente');
 
 const navegar = vi.fn();
 vi.mock('react-router-dom', async (importOriginal) => ({

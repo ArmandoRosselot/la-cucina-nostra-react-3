@@ -1,4 +1,7 @@
 import { formatearPrecio } from '../utils/validaciones.js';
+import { descripcionPizza } from '../utils/pizza.js';
+
+const detalleIngredientes = (i) => i.ingredientesTexto ?? descripcionPizza(i.personalizada.ingredientes);
 
 /* Tabla de productos de una compra. Props: items [{ id, nombre, imagen, precio, cantidad, subtotal }] */
 export default function TablaItems({ items }) {
@@ -11,8 +14,8 @@ export default function TablaItems({ items }) {
         <tbody>
           {items.map((i) => (
             <tr key={i.id} data-testid="fila-item">
-              <td><img src={i.imagen} alt="" className="lcn-mini" /></td>
-              <td>{i.nombre}</td>
+              <td>{i.personalizada ? <span className="fs-3" aria-hidden="true">🍕</span> : <img src={i.imagen} alt="" className="lcn-mini" />}</td>
+              <td>{i.nombre}{i.personalizada && <div className="small text-muted">{detalleIngredientes(i)}</div>}</td>
               <td>{formatearPrecio(i.precio)}</td>
               <td>{i.cantidad}</td>
               <td className="text-end">{formatearPrecio(i.subtotal)}</td>

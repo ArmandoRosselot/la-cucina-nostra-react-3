@@ -1,22 +1,23 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { INGREDIENTES } from '../data/ingredientes.js';
+import { useCart } from '../context/CartContext.jsx';
+import { useTienda } from './TiendaLayout.jsx';
+import { PRECIO_BASE, MAX_INGREDIENTES, resumirPizza, precioPizza, crearItemPizza } from '../utils/pizza.js';
+import { formatearPrecio } from '../utils/validaciones.js';
 
-const INGREDIENTES = [
-  { id: 'tomate',   nombre: 'Tomate',    emoji: '🍅' },
-  { id: 'aceituna', nombre: 'Aceituna',  emoji: '🫒' },
-  { id: 'pimenton', nombre: 'Pimentón',  emoji: '🫑' },
-  { id: 'champi',   nombre: 'Champiñón', emoji: '🍄' },
-  { id: 'pina',     nombre: 'Piña',      emoji: '🍍' },
-  { id: 'tocino',   nombre: 'Tocino',    emoji: '🥓' },
-  { id: 'cebolla',  nombre: 'Cebolla',   emoji: '🧅' },
-  { id: 'aji',      nombre: 'Ají',       emoji: '🌶️' },
-];
+let consecutivo = 0;
+const nuevaClave = () => `topping-${(consecutivo += 1)}`;
 
 const LIMITE = 0.45; // radio máximo (0..0.5) donde se puede poner un ingrediente
 
 export default function PizzaBuilder() {
   const [seleccion, setSeleccion] = useState(INGREDIENTES[0]);
   const [puestos, setPuestos] = useState([]); // [{ key, emoji, x, y, giro }]
-  const [pedido, setPedido] = useState(false);   // true = pizza pedida, muestra a Snoopy
+  const [pedido, setPedido] = useState(false);   // true = pizza agregada al carrito, muestra a Snoopy
+  const { agregarPizza } = useCart();
+  const { abrirCarrito } = useTienda();
+  const navigate = useNavigate();
   const [hayImagen, setHayImagen] = useState(true); // false si no existe /img/snoopy.png
   const pizzaRef = useRef(null);
   const arrastrando = useRef(null); // key del ingrediente que se está moviendo
@@ -24,8 +25,8 @@ export default function PizzaBuilder() {
   // Convierte la posición del mouse a coordenadas 0..1 dentro de la pizza
   const posicion = (e) => {
     const r = pizzaRef.current.getBoundingClientRect();
-    let x = (e.clientX - r.left) / r.width;
-    let y = (e.clientY - r.top) / r.height;
+    let x = r.width ? (e.clientX - r.left) / r.width : 0.5;
+    let y = r.height ? (e.clientY - r.top) / r.height : 0.5;
     // Si se sale de la masa, lo deja en el borde
     const dx = x - 0.5, dy = y - 0.5;
     const d = Math.hypot(dx, dy);
@@ -33,9 +34,19 @@ export default function PizzaBuilder() {
     return { x, y };
   };
 
+  const agregarEn = (ing, x, y) => {
+    if (puestos.length >= MAX_INGREDIENTES) return;
+    setPuestos((p) => [...p, { key: nuevaClave(), emoji: ing.emoji, x, y, giro: Math.round(Math.random() * 360) }]);
+  };
   const agregar = (ing, e) => {
     const { x, y } = posicion(e);
-    setPuestos((p) => [...p, { key: crypto.randomUUID(), emoji: ing.emoji, x, y, giro: Math.round(Math.random() * 360) }]);
+    agregarEn(ing, x, y);
+  };
+  // Alternativa sin mouse (teclado / táctil): pone el ingrediente en un punto al azar de la masa.
+  const agregarAlAzar = (ing) => {
+    const ang = Math.random() * Math.PI * 2;
+    const radio = Math.sqrt(Math.random()) * LIMITE;
+    agregarEn(ing, 0.5 + Math.cos(ang) * radio, 0.5 + Math.sin(ang) * radio);
   };
 
   // 1) Clic en la pizza: pone el ingrediente seleccionado
@@ -66,9 +77,16 @@ export default function PizzaBuilder() {
 
   const nuevaPizza = () => { setPuestos([]); setPedido(false); };
 
-  const resumen = INGREDIENTES
-    .map((ing) => ({ ...ing, n: puestos.filter((p) => p.emoji === ing.emoji).length }))
-    .filter((i) => i.n > 0);
+  const resumen = resumirPizza(puestos);
+  const precio = precioPizza(resumen);
+  const lleno = puestos.length >= MAX_INGREDIENTES;
+
+  const agregarAlCarrito = () => {
+    agregarPizza(crearItemPizza(resumen));
+    setPedido(true);
+  };
+  const irAPagar = () => navigate('/comprar');
+  const verCarrito = () => { nuevaPizza(); abrirCarrito(); };
 
   return (
     <section id="armar" className="row g-4 align-items-start">
@@ -108,12 +126,13 @@ export default function PizzaBuilder() {
             ))}
           </div>
 
+          {lleno && <p className="text-danger small mt-2 mb-0" role="status">Llegaste al máximo de {MAX_INGREDIENTES} ingredientes por pizza.</p>}
           <div className="d-flex justify-content-center gap-2 mt-3">
             <button className="btn btn-outline-danger" onClick={() => setPuestos([])} disabled={!puestos.length}>
               Limpiar pizza
             </button>
-            <button className="btn btn-success" onClick={() => setPedido(true)} disabled={!puestos.length}>
-              Pedir mi pizza
+            <button className="btn btn-success" onClick={agregarAlCarrito} disabled={!puestos.length}>
+              <i className="bi bi-cart-plus" aria-hidden="true" /> Agregar al carrito · {formatearPrecio(precio)}
             </button>
           </div>
         </div>
@@ -133,25 +152,33 @@ export default function PizzaBuilder() {
               >
                 <span className="topping-emoji">{ing.emoji}</span>
                 <span className="small">{ing.nombre}</span>
+                <span className="small text-muted">+{formatearPrecio(ing.precio)}</span>
               </button>
             ))}
           </div>
+
+          <button type="button" className="btn btn-outline-secondary btn-sm w-100 mb-3" onClick={() => agregarAlAzar(seleccion)} disabled={lleno}>
+            + Agregar {seleccion.nombre} {seleccion.emoji}
+          </button>
 
           <h3 className="h6 fw-bold">Tu pizza lleva:</h3>
           {resumen.length === 0 ? (
             <p className="text-muted">Todavía no agregas nada.</p>
           ) : (
             <ul className="list-unstyled mb-0">
-              {resumen.map((i) => (<li key={i.id}>{i.emoji} {i.nombre} × {i.n}</li>))}
+              {resumen.map((i) => (<li key={i.id}>{i.emoji} {i.nombre} × {i.n} <span className="text-muted small">({formatearPrecio(i.precio * i.n)})</span></li>))}
             </ul>
           )}
+          <hr />
+          <div className="d-flex justify-content-between"><span>Masa, salsa y queso</span><span>{formatearPrecio(PRECIO_BASE)}</span></div>
+          <div className="d-flex justify-content-between fw-bold fs-5" data-testid="precio-pizza"><span>Total pizza</span><span>{formatearPrecio(precio)}</span></div>
         </div>
       </div>
 
       {pedido && (
         <div className="pedido-overlay" role="dialog" aria-modal="true">
           <div className="pedido-caja lcn-panel text-center">
-            <div className="pedido-globo">¡Pedido realizado!</div>
+            <div className="pedido-globo">¡Pizza agregada al carrito!</div>
             {hayImagen ? (
               <img
                 className="pedido-snoopy"
@@ -164,7 +191,12 @@ export default function PizzaBuilder() {
             )}
             <p className="mt-3 mb-1 fw-bold">Tu pizza lleva:</p>
             <p>{resumen.map((i) => `${i.emoji} ${i.nombre} × ${i.n}`).join(' · ')}</p>
-            <button className="btn btn-danger" onClick={nuevaPizza}>Armar otra pizza</button>
+            <p className="fw-bold">{formatearPrecio(precio)}</p>
+            <div className="d-flex flex-wrap justify-content-center gap-2">
+              <button className="btn btn-success" onClick={irAPagar}>Ir a pagar</button>
+              <button className="btn btn-outline-secondary" onClick={verCarrito}>Ver carrito</button>
+              <button className="btn btn-danger" onClick={nuevaPizza}>Armar otra pizza</button>
+            </div>
           </div>
         </div>
       )}

@@ -1,105 +1,58 @@
-import React, { useState } from 'react';
+import { Fragment, useState } from 'react';
+import Cabecera from './Cabecera.jsx';
+import { obtenerOrdenes } from '../../data/db.js';
+import { formatearPrecio } from '../../utils/validaciones.js';
 
-const INITIAL_BOLETAS = [
-  { id: 'B-1048', cliente: 'Mesa 4 (Juan Pérez)', fecha: '2026-10-22 14:30', pago: 'Tarjeta de Débito', total: 42500, estado: 'Emitida' },
-  { id: 'B-1047', cliente: 'Mesa 2 (María Gómez)', fecha: '2026-10-22 14:15', pago: 'Efectivo', total: 18900, estado: 'Emitida' },
-  { id: 'B-1046', cliente: 'Pedido Delivery #88', fecha: '2026-10-22 13:50', pago: 'Transferencia', total: 31200, estado: 'Emitida' },
-  { id: 'B-1045', cliente: 'Mesa 7 (Carlos Ruiz)', fecha: '2026-10-22 13:10', pago: 'Tarjeta de Crédito', total: 65000, estado: 'Anulada' },
-  { id: 'B-1044', cliente: 'Mesa 1 (Laura S.)', fecha: '2026-10-22 12:45', pago: 'Tarjeta de Débito', total: 27400, estado: 'Emitida' }
-];
+const ESTADOS = { pagada: 'bg-success', rechazada: 'bg-danger', pendiente: 'bg-secondary' };
 
+/* Órdenes reales generadas en el checkout de la tienda. */
 export default function Ordenes({ onVolver }) {
-  const [boletas] = useState(INITIAL_BOLETAS);
-  const [filtroPago, setFiltroPago] = useState('Todos');
-
-  const boletasFiltradas = boletas.filter(b => 
-    filtroPago === 'Todos' || b.pago === filtroPago
-  );
+  const [ordenes] = useState(() => obtenerOrdenes().slice().reverse());
+  const [filtro, setFiltro] = useState('todas');
+  const [abierta, setAbierta] = useState(null);
+  const visibles = ordenes.filter((o) => filtro === 'todas' || o.estado === filtro);
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <div>
-          <h1 className="page-title">Órdenes y Boletas Emitidas</h1>
-          <p className="page-subtitle mb-0">Resumen detallado de la facturación y ventas del restaurante</p>
-        </div>
-        <button className="btn btn-outline-secondary btn-sm" onClick={onVolver}>
-          ← Volver al Dashboard
-        </button>
+      <Cabecera titulo="Órdenes" subtitulo="Compras realizadas desde la tienda" onVolver={onVolver} />
+      <div className="btn-group mb-3" role="group" aria-label="Filtrar por estado">
+        {['todas', 'pagada', 'rechazada', 'pendiente'].map((e) => (
+          <button key={e} type="button" className={`btn btn-sm ${filtro === e ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setFiltro(e)}>
+            {e[0].toUpperCase() + e.slice(1)}
+          </button>
+        ))}
       </div>
 
-      {/* Filtros por Medio de Pago */}
-      <div className="card border-0 shadow-sm mb-4">
-        <div className="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
-          <span className="fw-bold text-secondary">Filtrar por medio de pago:</span>
-          <div className="btn-group" role="group">
-            {['Todos', 'Efectivo', 'Tarjeta de Débito', 'Tarjeta de Crédito', 'Transferencia'].map((medio) => (
-              <button
-                key={medio}
-                type="button"
-                className={`btn btn-sm ${filtroPago === medio ? 'btn-primary' : 'btn-outline-primary'}`}
-                onClick={() => setFiltroPago(medio)}
-              >
-                {medio}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Tabla de Boletas */}
-      <div className="card border-0 shadow-sm">
-        <div className="card-body p-0">
-          <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th className="ps-4">N° Boleta</th>
-                  <th>Mesa / Cliente</th>
-                  <th>Fecha y Hora</th>
-                  <th>Medio de Pago</th>
-                  <th>Total</th>
-                  <th>Estado</th>
-                  <th className="text-end pe-4">Acción</th>
+      <div className="card border-0 shadow-sm"><div className="table-responsive">
+        <table className="table table-hover align-middle mb-0">
+          <thead className="table-light"><tr><th className="ps-4">N°</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Estado</th><th /></tr></thead>
+          <tbody>
+            {visibles.length === 0 && <tr><td colSpan="6" className="text-center text-muted py-4">No hay órdenes para mostrar.</td></tr>}
+            {visibles.map((o) => (
+              <Fragment key={o.id}>
+                <tr data-testid="orden-admin">
+                  <td className="ps-4 fw-bold">#{o.numero}</td>
+                  <td>{o.cliente.nombre} {o.cliente.apellidos}<div className="small text-muted">{o.cliente.email}</div></td>
+                  <td className="small text-muted">{new Date(o.fecha).toLocaleString('es-CL')}</td>
+                  <td className="fw-bold">{formatearPrecio(o.total)}</td>
+                  <td><span className={`badge ${ESTADOS[o.estado]}`}>{o.estado}</span></td>
+                  <td className="text-end pe-3">
+                    <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setAbierta(abierta === o.id ? null : o.id)}>
+                      {abierta === o.id ? 'Ocultar' : 'Detalle'}
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {boletasFiltradas.length > 0 ? (
-                  boletasFiltradas.map((item) => (
-                    <tr key={item.id}>
-                      <td className="ps-4 fw-bold">{item.id}</td>
-                      <td>{item.cliente}</td>
-                      <td className="text-muted small">{item.fecha}</td>
-                      <td>
-                        <span className="badge bg-light text-dark border">
-                          {item.pago}
-                        </span>
-                      </td>
-                      <td className="fw-bold">${item.total.toLocaleString('es-CL')}</td>
-                      <td>
-                        <span className={`badge ${item.estado === 'Emitida' ? 'bg-success' : 'bg-danger'}`}>
-                          {item.estado}
-                        </span>
-                      </td>
-                      <td className="text-end pe-4">
-                        <button className="btn btn-sm btn-outline-dark me-2" title="Imprimir PDF">
-                          📄 PDF
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="text-center py-4 text-muted">
-                      No se encontraron boletas asociadas al filtro seleccionado.
-                    </td>
-                  </tr>
+                {abierta === o.id && (
+                  <tr><td colSpan="6" className="bg-light">
+                    <ul className="mb-1">{o.items.map((i) => <li key={i.id}>{i.cantidad} × {i.nombre} — {formatearPrecio(i.subtotal)}</li>)}</ul>
+                    <small className="text-muted">Entrega: {o.direccion.calle} {o.direccion.departamento}, {o.direccion.comuna}, {o.direccion.region}</small>
+                  </td></tr>
                 )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div></div>
     </div>
   );
 }

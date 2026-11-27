@@ -23,11 +23,12 @@ export default function CartPanel({ abierto, onCerrar, onPedir }) {
               {detalle.map((item) => (
                 <li className="list-group-item px-0" key={item.id} data-testid="item-carrito">
                   <div className="d-flex justify-content-between">
-                    <strong>{item.nombre}</strong>
+                    <strong>{item.personalizada ? '🍕 ' : ''}{item.nombre}</strong>
                     <button type="button" className="btn btn-sm text-danger p-0" aria-label={`Quitar ${item.nombre}`} onClick={() => quitar(item.id)}>
                       <i className="bi bi-trash" />
                     </button>
                   </div>
+                  {item.personalizada && <div className="small text-muted" data-testid="ingredientes-carrito">{item.ingredientesTexto}</div>}
                   <div className="d-flex justify-content-between align-items-center mt-1">
                     <div className="btn-group btn-group-sm" role="group" aria-label={`Cantidad de ${item.nombre}`}>
                       <button type="button" className="btn btn-outline-secondary" aria-label={`Quitar una unidad de ${item.nombre}`} onClick={() => cambiar(item.id, -1)}>−</button>

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { obtenerCarrito, guardarCarrito, obtenerProductos } from '../data/db.js';
 import {
-  agregarItem, cambiarCantidad, quitarItem,
+  agregarItem, cambiarCantidad, quitarItem, limiteDe, agregarPizzaAlCarrito,
   detallarCarrito, calcularTotal, contarUnidades
 } from '../utils/carrito.js';
 
@@ -23,9 +23,15 @@ export function CartProvider({ children }) {
       detalle,
       total: calcularTotal(detalle),
       unidades: contarUnidades(items),
-      agregar: (id, n = 1) =>
-        setItems((prev) => Array.from({ length: n }).reduce((acc) => agregarItem(acc, id), prev)),
-      cambiar: (id, delta) => setItems((prev) => cambiarCantidad(prev, id, delta)),
+      agregar: (id, n = 1) => {
+        const limite = limiteDe(obtenerProductos().find((p) => p.id === id));
+        setItems((prev) => Array.from({ length: n }).reduce((acc) => agregarItem(acc, id, limite), prev));
+      },
+      cambiar: (id, delta) => {
+        const limite = limiteDe(obtenerProductos().find((p) => p.id === id));
+        setItems((prev) => cambiarCantidad(prev, id, delta, limite));
+      },
+      agregarPizza: (itemPizza) => setItems((prev) => agregarPizzaAlCarrito(prev, itemPizza)),
       quitar: (id) => setItems((prev) => quitarItem(prev, id)),
       vaciar: () => setItems([])
     };

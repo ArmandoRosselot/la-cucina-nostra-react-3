@@ -35,7 +35,7 @@ describe('Detalle de producto', () => {
   it('muestra nombre, ingredientes y precio', async () => {
     await renderApp('/productos/1');
     expect(screen.getByRole('heading', { name: 'Bruschetta tradicional' })).toBeInTheDocument();
-    expect(screen.getByText(/ciabatta/i)).toBeInTheDocument();
+    expect(screen.getByTestId('ingredientes')).toHaveTextContent(/ciabatta/i);
     expect(screen.getAllByText('$5.500').length).toBeGreaterThan(0);
   });
 

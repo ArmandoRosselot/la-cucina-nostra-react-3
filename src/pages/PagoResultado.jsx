@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
 import PaginaPanel from '../components/PaginaPanel.jsx';
 import TablaItems from '../components/TablaItems.jsx';
 import { useCart } from '../context/CartContext.jsx';
-import { actualizarOrden, obtenerOrdenPorId } from '../data/db.js';
+import { actualizarOrden, obtenerOrdenPorId, descontarStock, obtenerProductos } from '../data/db.js';
+import { problemasDeStock, detallarCarrito } from '../utils/carrito.js';
 import { simularPago } from '../utils/pago.js';
 import { formatearPrecio } from '../utils/validaciones.js';
 
@@ -19,7 +21,9 @@ export default function PagoResultado({ exito = false }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const { vaciar } = useCart();
-  const [orden] = useState(() => obtenerOrdenPorId(id));
+  const { usuario, esAdmin } = useAuth();
+  // Se lee en cada render: el estado de la orden cambia al reintentar el pago.
+  const orden = obtenerOrdenPorId(id);
   const [mensaje, setMensaje] = useState('');
 
   if (!orden) {
@@ -30,9 +34,32 @@ export default function PagoResultado({ exito = false }) {
     );
   }
 
+  /* Una orden de un cliente con cuenta solo la ve su dueño o el administrador. */
+  if (orden.usuarioId != null && !esAdmin && usuario?.id !== orden.usuarioId) {
+    return (
+      <PaginaPanel titulo="Sin acceso">
+        <p className="text-center mb-0">Esta compra pertenece a otra cuenta. <Link to="/">Volver al inicio</Link></p>
+      </PaginaPanel>
+    );
+  }
+
+  /* La URL no puede contradecir el estado real de la orden. */
+  const rutaReal = { pagada: `/pago-correcto/${orden.id}`, rechazada: `/pago-error/${orden.id}`, pendiente: '/comprar' }[orden.estado];
+  if (rutaReal && rutaReal !== `/${exito ? 'pago-correcto' : 'pago-error'}/${orden.id}`) {
+    return <Navigate to={rutaReal} replace />;
+  }
+
   const reintentar = () => {
+    // Antes de reintentar se vuelve a comprobar el stock.
+    const lineas = detallarCarrito(orden.items.map(({ id, cantidad, personalizada }) => ({ id, cantidad, personalizada })), obtenerProductos());
+    const faltantes = problemasDeStock(lineas);
+    if (faltantes.length || lineas.length !== orden.items.length) {
+      setMensaje('Ya no hay stock suficiente para completar esta compra.');
+      return;
+    }
     if (simularPago()) {
       actualizarOrden(orden.id, { estado: 'pagada' });
+      descontarStock(orden.items);
       vaciar();
       navigate(`/pago-correcto/${orden.id}`);
     } else {

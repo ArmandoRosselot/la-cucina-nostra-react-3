@@ -1,24 +1,17 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useMemo } from 'react';
 import ProductCard from './ProductCard.jsx';
-
-gsap.registerPlugin(ScrollTrigger);
+import useReveal from '../hooks/useReveal.js';
 
 const normalizar = (t) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 /* Listado de productos con pestañas por categoría.
    El texto de búsqueda llega desde el encabezado (ya validado).
-   Las tarjetas aparecen con un fade-in escalonado (GSAP), al entrar en pantalla
-   y cada vez que cambia el listado (categoría o búsqueda).
    Props: productos, categorias, categoria, busqueda,
           onCategoria(nombre), onLimpiar(), onAgregar(p), onVerDetalle(p) */
 export default function MenuSection({
   productos, categorias, categoria, busqueda, onCategoria, onLimpiar, onAgregar, onVerDetalle,
   titulo = 'Delicioso menú', subtitulo = 'Conoce nuestro'
 }) {
-  const fila = useRef(null);
-
   const visibles = useMemo(() => {
     const q = normalizar(busqueda.trim());
     // Con texto se busca en TODO el menú; sin texto, solo en la categoría activa.
@@ -29,30 +22,7 @@ export default function MenuSection({
     );
   }, [productos, categoria, busqueda]);
 
-  useLayoutEffect(() => {
-    if (!fila.current) return undefined; // sin resultados no hay fila que animar
-
-    // matchMedia respeta "reducir movimiento": en ese caso no se anima nada.
-    const mm = gsap.matchMedia(fila);
-
-    mm.add('(prefers-reduced-motion: no-preference)', () => {
-      gsap.from('.lcn-menu-item', {
-        opacity: 0,
-        y: 20,
-        duration: 0.6,
-        ease: 'power2.out',
-        stagger: { amount: 0.6 }, // el escalonado total dura 0.6 s sin importar cuántas tarjetas haya
-        clearProps: 'opacity,transform', // devuelve el control al CSS (hover, etc.)
-        scrollTrigger: {
-          trigger: fila.current,
-          start: 'top 85%',
-          once: true,
-        },
-      });
-    });
-
-    return () => mm.revert(); // limpia animaciones y ScrollTriggers antes de cada nuevo listado
-  }, [visibles]);
+  const refLista = useReveal('.reveal', [visibles]);
 
   return (
     <section id="menu" className="lcn-section">
@@ -87,9 +57,9 @@ export default function MenuSection({
           )}
 
           {visibles.length > 0 ? (
-            <div className="row g-4" ref={fila}>
+            <div className="row g-4" ref={refLista}>
               {visibles.map((p) => (
-                <div className="col-12 col-sm-6 col-lg-4 lcn-menu-item" key={p.id}>
+                <div className="col-12 col-sm-6 col-lg-4" key={p.id}>
                   <ProductCard producto={p} onAgregar={onAgregar} onVerDetalle={onVerDetalle} />
                 </div>
               ))}

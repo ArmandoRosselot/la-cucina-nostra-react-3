@@ -4,9 +4,10 @@ import PaginaPanel from '../components/PaginaPanel.jsx';
 import TablaItems from '../components/TablaItems.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
-import { crearOrden, actualizarOrden } from '../data/db.js';
+import { crearOrden, actualizarOrden, descontarStock } from '../data/db.js';
 import { REGIONES } from '../data/regiones.js';
 import { simularPago } from '../utils/pago.js';
+import { problemasDeStock } from '../utils/carrito.js';
 import { formatearPrecio, validarFormularioCheckout } from '../utils/validaciones.js';
 
 /* Si hay sesión iniciada, los datos del cliente se completan solos (nota del PDF). */
@@ -22,11 +23,13 @@ function valoresIniciales(sesion) {
 
 /* Vista "Comprar" (checkout): datos del cliente + dirección de entrega. */
 export default function Checkout() {
-  const { sesion } = useAuth();
+  const { sesion, usuario } = useAuth();
   const { detalle, total, vaciar } = useCart();
   const navigate = useNavigate();
   const [valores, setValores] = useState(() => valoresIniciales(sesion));
   const [errores, setErrores] = useState({});
+  const [errorStock, setErrorStock] = useState('');
+  const [enviando, setEnviando] = useState(false);
 
   if (detalle.length === 0) {
     return (
@@ -45,9 +48,19 @@ export default function Checkout() {
 
   const pagar = (e) => {
     e.preventDefault();
+    if (enviando) return; // evita crear dos órdenes por doble clic
     const nuevos = validarFormularioCheckout(valores);
     setErrores(nuevos);
     if (Object.keys(nuevos).length) return;
+
+    // Regla de negocio: no se vende más de lo que hay en stock.
+    const faltantes = problemasDeStock(detalle);
+    if (faltantes.length) {
+      setErrorStock(faltantes.map((f) => `${f.nombre}: pediste ${f.pedido}, quedan ${f.disponible}`).join(' · '));
+      return;
+    }
+    setErrorStock('');
+    setEnviando(true);
 
     const orden = crearOrden({
       cliente: { nombre: valores.nombre.trim(), apellidos: valores.apellidos.trim(), email: valores.email.trim() },
@@ -55,16 +68,19 @@ export default function Checkout() {
         calle: valores.calle.trim(), departamento: valores.departamento.trim(), region: valores.region,
         comuna: valores.comuna, indicaciones: valores.indicaciones.trim()
       },
-      items: detalle.map(({ id, nombre, imagen, precio, cantidad, subtotal }) => ({ id, nombre, imagen, precio, cantidad, subtotal })),
-      total
+      items: detalle.map(({ id, nombre, imagen, precio, cantidad, subtotal, personalizada }) => ({ id, nombre, imagen, precio, cantidad, subtotal, ...(personalizada ? { personalizada } : {}) })),
+      total,
+      usuarioId: usuario?.id ?? null
     });
 
     if (simularPago()) {
       actualizarOrden(orden.id, { estado: 'pagada' });
+      descontarStock(orden.items);
       vaciar();
       navigate(`/pago-correcto/${orden.id}`);
     } else {
       actualizarOrden(orden.id, { estado: 'rechazada' });
+      setEnviando(false);
       navigate(`/pago-error/${orden.id}`);
     }
   };
@@ -85,6 +101,7 @@ export default function Checkout() {
         <span className="badge fs-6 lcn-badge-total" data-testid="total-a-pagar">Total a pagar: {formatearPrecio(total)}</span>
       </div>
 
+      {errorStock && <div className="alert alert-warning" role="alert">Stock insuficiente — {errorStock}. Ajusta tu carrito.</div>}
       <TablaItems items={detalle} />
 
       <form onSubmit={pagar} noValidate className="mt-4">
@@ -129,7 +146,7 @@ export default function Checkout() {
         </div>
 
         <div className="text-end">
-          <button type="submit" className="btn lcn-btn-cart btn-lg">Pagar ahora {formatearPrecio(total)}</button>
+          <button type="submit" className="btn lcn-btn-cart btn-lg" disabled={enviando}>Pagar ahora {formatearPrecio(total)}</button>
         </div>
       </form>
     </PaginaPanel>

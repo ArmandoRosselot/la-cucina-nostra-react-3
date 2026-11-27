@@ -177,3 +177,18 @@ export function formatearPrecio(monto) {
   const numero = Math.round(Number(monto) || 0);
   return '$' + String(numero).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
+
+/* Validación del formulario de producto del panel administrador. Devuelve { campo: mensaje }. */
+export function validarProducto(v) {
+  const e = {};
+  if (!String(v.nombre ?? '').trim()) e.nombre = 'El nombre es obligatorio.';
+  else if (String(v.nombre).trim().length > 60) e.nombre = 'Máximo 60 caracteres.';
+  if (!v.categoria) e.categoria = 'Selecciona una categoría.';
+  if (!(Number(v.precio) > 0)) e.precio = 'El precio debe ser mayor a 0.';
+  if (v.precioOferta !== '' && v.precioOferta != null && !(Number(v.precioOferta) > 0 && Number(v.precioOferta) < Number(v.precio))) {
+    e.precioOferta = 'La oferta debe ser menor al precio normal.';
+  }
+  if (!(Number.isInteger(Number(v.stock)) && Number(v.stock) >= 0)) e.stock = 'El stock debe ser un entero desde 0.';
+  if (!String(v.ingredientes ?? '').trim()) e.ingredientes = 'Indica los ingredientes.';
+  return e;
+}

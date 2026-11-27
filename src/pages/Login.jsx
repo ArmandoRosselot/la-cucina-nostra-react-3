@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import FormField from '../components/FormField.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { autenticarUsuario } from '../data/db.js';
@@ -11,6 +11,7 @@ export default function Login() {
   const [errorGeneral, setErrorGeneral] = useState('');
   const { entrar } = useAuth();
   const navigate = useNavigate();
+  const { state } = useLocation();
 
   const cambiar = (e) => {
     setValores((v) => ({ ...v, [e.target.name]: e.target.value }));
@@ -29,7 +30,8 @@ export default function Login() {
       return;
     }
     entrar(resultado.usuario);
-    navigate('/');
+    // Vuelve a la página protegida que se intentó abrir; el admin entra a su panel.
+    navigate(state?.from ?? (resultado.usuario.rol === 'admin' ? '/LaCucinaNostraAdmin' : '/'));
   };
 
   return (
@@ -40,6 +42,7 @@ export default function Login() {
         </div>
         <h3>Iniciar Sesión</h3>
 
+        {state?.aviso && !errorGeneral && <div className="alert alert-info py-2" role="status">{state.aviso}</div>}
         {errorGeneral && <div className="alert alert-danger py-2" role="alert">{errorGeneral}</div>}
 
         <form onSubmit={enviar} noValidate>

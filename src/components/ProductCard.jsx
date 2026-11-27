@@ -8,9 +8,11 @@ import { precioFinal, descuentoPorcentaje } from '../utils/carrito.js';
      - onVerDetalle(producto): se llama al abrir el detalle */
 export default function ProductCard({ producto, onAgregar, onVerDetalle }) {
   const descuento = descuentoPorcentaje(producto);
+  const agotado = (producto.stock ?? 1) <= 0;
 
   return (
-    <article className="card h-100 lcn-card position-relative" data-testid="producto">
+    <article className={`card h-100 lcn-card position-relative reveal ${agotado ? 'lcn-agotado' : ''}`} data-testid="producto">
+      {agotado && <span className="badge bg-dark position-absolute top-0 end-0 m-2">Agotado</span>}
       {descuento > 0 && <span className="badge lcn-badge-oferta">-{descuento}%</span>}
       <button
         type="button"
@@ -28,8 +30,8 @@ export default function ProductCard({ producto, onAgregar, onVerDetalle }) {
             {descuento > 0 && <del className="text-muted small me-2">{formatearPrecio(producto.precio)}</del>}
             <strong className="lcn-precio">{formatearPrecio(precioFinal(producto))}</strong>
           </div>
-          <button type="button" className="btn btn-sm lcn-btn-primary" onClick={() => onAgregar(producto)}>
-            <i className="bi bi-cart-plus" /> Agregar
+          <button type="button" className="btn btn-sm lcn-btn-primary" disabled={agotado} onClick={() => onAgregar(producto)}>
+            <i className="bi bi-cart-plus" /> {agotado ? 'Sin stock' : 'Agregar'}
           </button>
         </div>
       </div>

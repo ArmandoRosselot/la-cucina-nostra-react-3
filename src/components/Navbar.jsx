@@ -14,7 +14,7 @@ export default function Navbar({ onAbrirCarrito }) {
   const [dropdown, setDropdown] = useState(false);
   const [texto, setTexto] = useState('');
   const [error, setError] = useState('');
-  const { sesion, salir } = useAuth();
+  const { sesion, esAdmin, salir } = useAuth();
   const { unidades, total } = useCart();
   const navigate = useNavigate();
   const cerrar = () => { setAbierto(false); setDropdown(false); };
@@ -95,11 +95,14 @@ export default function Navbar({ onAbrirCarrito }) {
             </li>
 
             <li className="nav-item"><Link className="nav-link" to="/ofertas" onClick={cerrar}>Ofertas</Link></li>
-            <li className="nav-item"><Link className="nav-link" to="/armar-pizza" onClick={cerrar}>Arma tu pizza</Link></li>
             <li className="nav-item"><Link className="nav-link" to="/nosotros" onClick={cerrar}>Nosotros</Link></li>
             <li className="nav-item"><Link className="nav-link" to="/blog" onClick={cerrar}>Blog</Link></li>
             <li className="nav-item"><Link className="nav-link" to="/contacto" onClick={cerrar}>Contacto</Link></li>
-            {sesion?.rol === 'admin' && (
+            <li className="nav-item"><Link className="nav-link" to="/armar-pizza" onClick={cerrar}>Arma tu pizza</Link></li>
+            {sesion && (
+              <li className="nav-item"><Link className="nav-link" to="/mi-cuenta" onClick={cerrar}>Mi cuenta</Link></li>
+            )}
+            {esAdmin && (
               <li className="nav-item"><Link className="nav-link" to="/LaCucinaNostraAdmin" onClick={cerrar}>Administrador</Link></li>
             )}
           </ul>

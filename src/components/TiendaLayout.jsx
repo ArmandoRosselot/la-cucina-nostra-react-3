@@ -43,7 +43,7 @@ export default function TiendaLayout() {
   const verDetalle = (producto) => navigate(`/productos/${producto.id}`);
 
   return (
-    <TiendaContext.Provider value={{ agregarProducto, verDetalle }}>
+    <TiendaContext.Provider value={{ agregarProducto, verDetalle, abrirCarrito: () => setCarritoAbierto(true) }}>
       <div className="lcn-home d-flex flex-column">
         <Navbar onAbrirCarrito={() => setCarritoAbierto(true)} />
         <div className="flex-grow-1"><Outlet /></div>

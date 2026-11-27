@@ -174,6 +174,15 @@ body {
 .auth-page .form-select option { color: #222; text-shadow: none; }
 .auth-page .form-select.is-invalid { background-image: var(--bs-form-select-bg-img); box-shadow: inset 0 0 0 2px #ffd1d1; }
 
+/* ---- Detalle de producto / texto enriquecido ---- */
+.lcn-richtext .tiptap { outline: none; }
+.lcn-richtext .tiptap p:last-child { margin-bottom: 0; }
+.tiptap.form-control { min-height: 140px; }
+.tiptap.form-control:focus { outline: 2px solid #0d6efd55; }
+.lcn-dato { border: 1px solid #0000001a; border-radius: .75rem; padding: .5rem .9rem; background: #ffffffcc; text-align: center; }
+.lcn-dato strong { display: block; font-size: 1.1rem; }
+.lcn-stock-bajo { color: #b45309; font-weight: 600; }
+.lcn-agotado { filter: grayscale(1); opacity: .65; }
 .lcn-hoja {
   background: #fff;
   border-radius: 0.5rem;
@@ -240,41 +249,3 @@ body {
 .pedido-snoopy { display: block; margin: 0 auto; max-width: 70%; max-height: 220px; object-fit: contain; }
 .pedido-snoopy-emoji { display: block; font-size: 6rem; line-height: 1; }
 @keyframes pedido-pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-/* ---------- Estilos para tiptap ---------- */
-.lcn-editor { padding: 0; }
-.lcn-editor .lcn-editor-contenido {
-  min-height: 120px;
-  padding: .375rem .75rem;
-  outline: none;
-}
-.lcn-editor:focus-within {
-  border-color: #86b7fe;
-  box-shadow: 0 0 0 .25rem rgba(13, 110, 253, .25);
-}
-.lcn-editor .lcn-editor-contenido p:last-child { margin-bottom: 0; }
-
-.lcn-editor .lcn-editor-contenido h2 { font-size: 1.5rem; margin: .75rem 0 .5rem; }
-.lcn-editor .lcn-editor-contenido h3 { font-size: 1.25rem; margin: .75rem 0 .5rem; }
-.lcn-editor .lcn-editor-contenido h4 { font-size: 1.05rem; margin: .75rem 0 .5rem; }
-.lcn-editor .lcn-editor-contenido a { color: #0d6efd; text-decoration: underline; cursor: pointer; }
-.lcn-editor .lcn-editor-contenido blockquote {
-  border-left: 3px solid #adb5bd;
-  margin: .5rem 0;
-  padding-left: .75rem;
-  color: #6c757d;
-}
-.lcn-editor .lcn-editor-contenido code {
-  background: #f1f3f5;
-  padding: .1rem .3rem;
-  border-radius: 4px;
-}
-.lcn-editor .lcn-editor-contenido hr { margin: .75rem 0; }
-.lcn-editor .lcn-editor-contenido mark { background: #fff3a3; padding: 0 .1rem; }
-.lcn-editor .lcn-editor-contenido p.is-editor-empty:first-child::before {
-  content: attr(data-placeholder);
-  color: #adb5bd;
-  float: left;
-  height: 0;
-  pointer-events: none;
-}

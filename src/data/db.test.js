@@ -65,7 +65,7 @@ describe('usuarios y sesión', () => {
   it('registra un usuario y guarda el correo en minúsculas', () => {
     const r = registrarUsuario(datos);
     expect(r.ok).toBe(true);
-    expect(obtenerUsuarios()[0].email).toBe('ana@correo.cl');
+    expect(obtenerUsuarios().find((u) => u.rol === 'cliente').email).toBe('ana@correo.cl');
   });
 
   it('no permite correos duplicados', () => {
@@ -85,7 +85,7 @@ describe('usuarios y sesión', () => {
   it('maneja la sesión sin guardar la contraseña', () => {
     const { usuario } = registrarUsuario(datos);
     iniciarSesion(usuario);
-    expect(obtenerSesion()).toEqual({ id: usuario.id, nombre: 'Ana Silva', email: 'ana@correo.cl', region: '', comuna: '' });
+    expect(obtenerSesion()).toEqual({ id: usuario.id, nombre: 'Ana Silva', email: 'ana@correo.cl', region: '', comuna: '', rol: 'cliente' });
     cerrarSesion();
     expect(obtenerSesion()).toBeNull();
   });
