@@ -43,3 +43,15 @@ Los archivos `*.test.js(x)` están junto a cada módulo.
 
 El pago es una simulación (`src/utils/pago.js`): ~80 % de las veces resulta correcto y el resto falla,
 para poder mostrar ambas vistas. En las pruebas se controla con `vi.spyOn(Math, 'random')`.
+
+## Instrucciones para TipTap
+En una nueva terminal ejecutar los siguientes comandos de instalación:
+```bash
+npm install @tiptap/react @tiptap/pm @tiptap/starter-kit
+npm install @tiptap/extension-underline @tiptap/extension-link @tiptap/extension-highlight @tiptap/extension-text-align @tiptap/extension-placeholder @tiptap/extension-character-count
+```
+
+instalar el DOMPurify:
+```bash
+npm install dompurify
+```
