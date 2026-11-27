@@ -55,3 +55,10 @@ instalar el DOMPurify:
 ```bash
 npm install dompurify
 ```
+
+## Instrucciones para GSAP
+
+Instalar GSAP:
+```bash
+npm install gsap
+```
